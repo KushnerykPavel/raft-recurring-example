@@ -89,8 +89,32 @@ func (b *BadgerFSM) set(key string, value interface{}) error {
 	return txn.Commit()
 }
 
+func (b *BadgerFSM) toTransaction(value any) (*Transaction, error) {
+	trx, err := json.Marshal(value)
+	if err != nil {
+		return nil, err
+	}
+	var transaction Transaction
+	err = json.Unmarshal(trx, &transaction)
+	return &transaction, err
+}
+
 func (b *BadgerFSM) setTransactions(key string, value interface{}) error {
 	log.Print("set_transactions: key:  ", key, " value: ", value)
+	trx, err := b.toTransaction(value)
+	if err != nil {
+		return err
+	}
+
+	_, err = b.get(trx.ID)
+	if err == nil {
+		return nil
+	}
+	if err != nil && !errors.Is(err, badger.ErrKeyNotFound) {
+		return err
+	}
+	_ = b.set(trx.ID, trx)
+
 	trxs, err := b.get(key)
 	if err != nil && !errors.Is(err, badger.ErrKeyNotFound) {
 		return err
