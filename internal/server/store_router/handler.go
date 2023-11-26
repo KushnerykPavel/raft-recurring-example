@@ -8,11 +8,13 @@ import (
 type Handler struct {
 	raft *raft.Raft
 	db   *badger.DB
+	addr string
 }
 
-func New(raft *raft.Raft, db *badger.DB) *Handler {
+func New(raft *raft.Raft, db *badger.DB, addr string) *Handler {
 	return &Handler{
 		raft: raft,
 		db:   db,
+		addr: addr,
 	}
 }

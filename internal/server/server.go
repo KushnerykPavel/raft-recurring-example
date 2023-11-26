@@ -37,7 +37,7 @@ func New(listenAddr string, badgerDB *badger.DB, r *raft.Raft) *Srv {
 	router.Post("/raft/join", raftRouter.JoinRaft)
 	router.Post("/raft/remove", raftRouter.RemoveRaft)
 
-	storeRouter := store_router.New(r, badgerDB)
+	storeRouter := store_router.New(r, badgerDB, listenAddr)
 	router.Post("/api/pay", storeRouter.Pay)
 	router.Post("/api/recurring", storeRouter.Recurring)
 	router.Get("/api/status/{order_id}", storeRouter.Status)

@@ -57,6 +57,7 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, _ := json.Marshal(map[string]interface{}{
+		"addr":         h.addr,
 		"order_id":     orderID,
 		"transactions": data,
 	})

@@ -91,7 +91,7 @@ func (h *Handler) Pay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := &repo.PayResponse{Token: token}
+	response := &repo.PayResponse{Token: token, Addr: h.addr}
 
 	render.Status(r, http.StatusCreated)
 	render.Render(w, r, response)

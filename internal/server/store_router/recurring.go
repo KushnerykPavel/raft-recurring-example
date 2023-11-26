@@ -52,4 +52,8 @@ func (h *Handler) Recurring(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response := &repo.RecurringResponse{Addr: h.addr}
+
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, response)
 }

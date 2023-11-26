@@ -12,3 +12,11 @@ type RecurringRequest struct {
 func (p *RecurringRequest) Bind(r *http.Request) error {
 	return nil
 }
+
+type RecurringResponse struct {
+	Addr string `json:"addr"`
+}
+
+func (rd *RecurringResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}

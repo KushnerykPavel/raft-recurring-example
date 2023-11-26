@@ -30,6 +30,7 @@ func (p *PayRequest) GetRecurringToken() string {
 
 type PayResponse struct {
 	Token string `json:"token"`
+	Addr  string `json:"addr"`
 }
 
 func (rd *PayResponse) Render(w http.ResponseWriter, r *http.Request) error {
