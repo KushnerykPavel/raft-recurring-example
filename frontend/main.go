@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type BackendState string
@@ -19,7 +21,22 @@ type BackendResponse struct {
 	State BackendState `json:"state"`
 }
 
+type follower struct {
+	Name string
+	URL  string
+}
+
 var backendsList = []string{"http://localhost:2221", "http://localhost:2222", "http://localhost:2223"}
+var followerList = []follower{
+	{
+		Name: "node2",
+		URL:  "localhost:1112",
+	},
+	{
+		Name: "node3",
+		URL:  "localhost:1113",
+	},
+}
 
 func isLeader(addr string) bool {
 	resp, err := http.Get(fmt.Sprintf("%s/raft/stats", addr))
@@ -62,11 +79,50 @@ func isAvailable(addr string) bool {
 func main() {
 	router := chi.NewRouter()
 
+	setupCluster(":2221", followerList)
+
 	router.Post("/api/pay", leaderProxy)
 	router.Post("/api/recurring", leaderProxy)
 	router.Get("/api/status/{order_id}", availableProxy)
 	log.Print("frontend run")
 	http.ListenAndServe(":8080", router)
+}
+
+func setupCluster(masterAddress string, followersList []follower) {
+	url := fmt.Sprintf("http://localhost%s/raft/join", masterAddress)
+	method := "POST"
+	client := &http.Client{}
+
+	for _, f := range followerList {
+
+		payload := strings.NewReader(fmt.Sprintf(`{
+ "node_id":"%s",
+ "raft_address":"%s"
+}`, f.Name, f.URL))
+
+		req, err := http.NewRequest(method, url, payload)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		req.Header.Add("Content-Type", "application/json")
+
+		res, err := client.Do(req)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer res.Body.Close()
+
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(string(body))
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func leaderProxy(w http.ResponseWriter, r *http.Request) {
